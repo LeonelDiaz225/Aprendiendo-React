@@ -1,49 +1,16 @@
 import { useState } from "react";
 import "./App.css";
-
-const TURNS = {
-  X: "x",
-  O: "o",
-};
-
-
-const Square = ({ children, isSelected, updateBoard, index }) => {
-  const className = `square ${isSelected ? 'is-selected' : ''}`;
-  const handleClick = () => {
-    updateBoard(index); // Pasar el index aquí
-  };
-
-  return ( 
-    <div onClick={handleClick} className={className}> {/* Usar handleClick en lugar de updateBoard directamente */}
-      {children}
-    </div>
-  );
-};
-
-const winnerCombo = [
-  [0, 1, 2],
-  [3, 4, 5],
-  [6, 7, 8],
-  [0, 3, 6],
-  [1, 4, 7],
-  [2, 5, 8],
-  [0, 4, 8],
-  [2, 4, 6],
-];
+import { Square } from "./components/Square";
+import constants from "./constants";
+import { TURNS, winnerCombo } from "./constants";
+import { checkWinnerFrom } from "./logic/board";
+import { WinnerModal } from "./components/WinnerModal";
 
 function App() {
   const [board, setBoard] = useState(Array(9).fill(null));
   const [turn, setTurn] = useState(TURNS.X);
   const [winner, setWinner] = useState(null);
-  const checkWinner = (boardToCheck) => {
-    for (const combo of winnerCombo) {
-      const [a, b, c] = combo;
-      if (boardToCheck[a] && boardToCheck[a] === boardToCheck[b] && boardToCheck[a] === boardToCheck[c]) {
-        return boardToCheck[a]; // Retorna el ganador (X o O)
-      }
-    }
-    return null; // No hay ganador
-  }
+ 
 
    const resetGame = () => {
     setBoard(Array(9).fill(null));
@@ -66,7 +33,7 @@ function App() {
     const newTurn = turn === TURNS.X ? TURNS.O : TURNS.X;
     setTurn(newTurn);
 
-    const newWinner = checkWinner(newBoard);
+    const newWinner = checkWinnerFrom(newBoard);
     if (newWinner) {
       setWinner(newWinner);
     } else if (isBoardFull(newBoard)) {
@@ -100,23 +67,7 @@ function App() {
         </Square> 
       </section>
 
-      {
-        winner !== null && (
-          <section className="winner">
-            <div className="text">
-              <h2>
-                {winner === false 
-                  ? '¡Empate!' 
-                  : `El ganador es: ${winner}`
-                }
-              </h2>
-              <button onClick={resetGame}>
-                Empezar de nuevo
-              </button>
-            </div>
-          </section>
-        )
-      }
+      <WinnerModal resetGame={resetGame} winner={winner}/>
     </main>
   );
 }
